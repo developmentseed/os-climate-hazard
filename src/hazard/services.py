@@ -7,8 +7,10 @@ from fsspec.implementations.local import LocalFileSystem
 from hazard.docs_store import DocStore  # type: ignore # noqa: E402
 from hazard.models.days_tas_above import DaysTasAboveIndicator  # noqa: E402
 from hazard.models.degree_days import DegreeDays  # noqa: E402
+from hazard.onboard.wri_aqueduct_flood import WRIAqueductFlood  # noqa: E402
 from hazard.sources.nex_gddp_cmip6 import NexGddpCmip6  # noqa: E402
 from hazard.sources.osc_zarr import OscZarr  # noqa: E402
+from hazard.sources.wri_aqueduct import WRIAqueductSource  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,
@@ -102,6 +104,28 @@ def degree_days_indicator(
     docs_store.update_inventory(model.inventory(), format=inventory_format)
 
     model.run_all(source, target, client=client)
+
+
+def wri_aqueduct_flood_indicator(
+    bucket: Optional[str] = None,
+    prefix: Optional[str] = None,
+    store: Optional[str] = None,
+    extra_xarray_store: Optional[bool] = False,
+    inventory_format: Optional[str] = "osc",
+):
+    """
+    Run the flood indicator generation using WRI data.
+    """
+
+    docs_store, target, client = setup(bucket, prefix, store, extra_xarray_store)
+
+    model = WRIAqueductFlood()
+
+    source = WRIAqueductSource()
+
+    docs_store.update_inventory(model.inventory(), format=inventory_format)
+
+    model.run_all(source=source, target=target, client=client)
 
 
 def setup(

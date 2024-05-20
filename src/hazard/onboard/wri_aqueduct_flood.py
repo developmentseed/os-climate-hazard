@@ -118,13 +118,13 @@ class WRIAqueductFlood(IndicatorModel):
 
     def path_riverine(self, scenario: str, gcm: str, year: int):
         path = "inundation/wri/v2/" + f"inunriver_{scenario}_{gcm}_{year}"
-        return path, f"inunriver_{scenario}_{gcm}_{year}_rp{{return_period:04d}}"
+        return path, f"inunriver_{scenario}_{gcm}_{year}_rp{{return_period:05d}}"
 
     def path_coastal(self, scenario: str, sub: str, year: str, model: str):
         path = "inundation/wri/v2/" + f"inuncoast_{scenario}_{sub}_{year}_{model}"
         return (
             path,
-            f"inuncoast_{scenario}_{sub}_{year}_rp{{return_period:04d}}_{model}",
+            f"inuncoast_{scenario}_{sub}_{year}_rp{{return_period:05d}}_{model}",
         )
 
     def inventory(self) -> Iterable[HazardResource]:
@@ -535,7 +535,7 @@ World Resource Institute Aqueduct Floods model, including subsidence; 50th perce
         logger.info(f"Running batch item with path {item.path}")
         for i, ret in enumerate(self.return_periods):
             logger.info(f"Copying return period {i + 1}/{len(self.return_periods)}")
-            with source.open_dataset(item.filename_return_period.format(return_period=ret)) as da:
+            with source.open_dataset(path=item.filename_return_period.format(return_period=ret)) as da:
                 assert da is not None
                 if ret == self.return_periods[0]:
                     z = target.create_empty(

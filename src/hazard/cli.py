@@ -61,10 +61,28 @@ def degree_days_indicator(
     )
 
 
+def wri_aqueduct_flood_indicator(
+    bucket: Optional[str] = None,
+    prefix: Optional[str] = None,
+    store: Optional[str] = None,
+    extra_xarray_store: Optional[bool] = False,
+    inventory_format: Optional[str] = "osc",
+):
+
+    hazard_services.wri_aqueduct_flood_indicator(
+        bucket=bucket,
+        prefix=prefix,
+        store=store,
+        extra_xarray_store=extra_xarray_store,
+        inventory_format=inventory_format,
+    )
+
+
 class Cli(object):
     def __init__(self) -> None:
         self.days_tas_above_indicator = days_tas_above_indicator
         self.degree_days_indicator = degree_days_indicator
+        self.wri_aqueduct_flood_indicator = wri_aqueduct_flood_indicator
 
 
 def cli():
