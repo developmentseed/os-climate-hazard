@@ -41,7 +41,7 @@ class OscZarr(ReadWriteDataArray):
                     key=os.environ.get("OSC_S3_ACCESS_KEY_DEV", None),
                     secret=os.environ.get("OSC_S3_SECRET_KEY_DEV", None),
                 )
-            group_path = str(PurePosixPath(bucket, prefix, "hazard.zarr"))
+            group_path = str(PurePosixPath(bucket, prefix))
             store = s3fs.S3Map(root=group_path, s3=s3, check=False)
 
         self.root = zarr.group(store=store)
@@ -138,6 +138,7 @@ class OscZarr(ReadWriteDataArray):
 
         if self.extra_xarray_store and spatial_coords:
             self.write_data_array(f"{path}-xarray", da)
+            zarr.consolidate_metadata(f"{path}-xarray")
 
         self.write_zarr(path, da, chunks)
 
