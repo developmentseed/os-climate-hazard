@@ -45,6 +45,7 @@ class WRIAqueductFlood(IndicatorModel):
         return self.resources[path]
 
     def batch_items(self) -> Iterable[BatchItem]:
+        logger.info(f"batching items")
         items = self.batch_items_riverine() + self.batch_items_coastal()
         # filtered = [i for i in items if i.resource.path in \
         # ["inundation/wri/v2/inuncoast_historical_nosub_hist_0",
@@ -118,14 +119,16 @@ class WRIAqueductFlood(IndicatorModel):
 
     def path_riverine(self, scenario: str, gcm: str, year: int):
         path = "inundation/wri/v2/" + f"inunriver_{scenario}_{gcm}_{year}"
-        return path, f"inunriver_{scenario}_{gcm}_{year}_rp{{return_period:05d}}"
+        res = path, f"inunriver_{scenario}_{gcm}_{year}_rp{{return_period:05d}}"
+        return res
 
     def path_coastal(self, scenario: str, sub: str, year: str, model: str):
         path = "inundation/wri/v2/" + f"inuncoast_{scenario}_{sub}_{year}_{model}"
-        return (
+        res = (
             path,
             f"inuncoast_{scenario}_{sub}_{year}_rp{{return_period:05d}}_{model}",
         )
+        return res
 
     def inventory(self) -> Iterable[HazardResource]:
         """Here we create the JSON directly, as a demonstration and for the sake of variety."""
@@ -538,8 +541,9 @@ World Resource Institute Aqueduct Floods model, including subsidence; 50th perce
             with source.open_dataset(path=item.filename_return_period.format(return_period=ret)) as da:
                 assert da is not None
                 if ret == self.return_periods[0]:
+                    logger.info(f"saving to {item.path}")
                     z = target.create_empty(
-                        item.resource.path,
+                        item.path,
                         len(da.x),
                         len(da.y),
                         Affine(
@@ -557,6 +561,9 @@ World Resource Institute Aqueduct Floods model, including subsidence; 50th perce
                 values = da[0, :, :].data  # will load into memory; assume source not chunked efficiently
                 values[values == -9999.0] = float("nan")
                 z[i, :, :] = values
+        if target.extra_xarray_store:
+            da = target.read(item.path)
+            target.write_data_array(f"{item.path}-xarray", da)
         print("done")
 
     def generate_tiles_single(self, item: BatchItem, source: OscZarr, target: OscZarr):

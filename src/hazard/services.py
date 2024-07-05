@@ -119,7 +119,10 @@ def wri_aqueduct_flood_indicator(
 
     source = WRIAqueductSource()
 
-    docs_store.update_inventory(model.inventory(), format=inventory_format)
+    if inventory_format == "stac":
+        docs_store.write_inventory_stac(model.inventory())
+    else:
+        docs_store.update_inventory(model.inventory())
 
     model.run_all(source=source, target=target, client=client)
 

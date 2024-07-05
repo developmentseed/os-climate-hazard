@@ -117,9 +117,13 @@ class HazardResource(BaseModel):
         converts a hazard resource to a list of STAC items. One unique set of parameter values and scenarios results
         in a single STAC item in the list.
         """
-        keys, values = zip(*self.params.items())
-        params_permutations = list(itertools.product(*values))
-        params_permutations = [dict(zip(keys, p)) for p in params_permutations]
+
+        if len(self.params.keys())>0: 
+            keys, values = zip(*self.params.items())
+            params_permutations = list(itertools.product(*values))
+            params_permutations = [dict(zip(keys, p)) for p in params_permutations]
+        else:
+            params_permutations=[{}]
 
         scenarios_permutations = []
         for s in self.scenarios:
@@ -190,9 +194,9 @@ class HazardResources(BaseModel):
         """
         converts hazard resources to a list of STAC items.
         """
-        stac_items_lists = [
-            resource.to_stac_items(path_root=path_root, items_as_dicts=items_as_dicts) for resource in self.resources
-        ]
+        stac_items_lists = []
+        for resource in self.resources:
+            stac_items_lists.append(resource.to_stac_items(path_root=path_root, items_as_dicts=items_as_dicts))
         stac_items_flat = list(itertools.chain(*stac_items_lists))
         return stac_items_flat
 

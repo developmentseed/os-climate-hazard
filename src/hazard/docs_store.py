@@ -48,7 +48,7 @@ class DocStore:
         self._fs = fs
         if type(self._fs) == s3fs.S3FileSystem:  # noqa: E721 # use isinstance?
             bucket = os.environ.get(self.__S3_bucket, bucket)
-            self._root = f"s3://{str(PurePosixPath(bucket, prefix))}"
+            self._root = str(PurePosixPath(bucket, prefix))
         elif type(self._fs) == LocalFileSystem:  # noqa: E721 # use isinstance?
             if local_path is None:
                 raise ValueError("if using a local filesystem, please provide a value for `local_path`")
