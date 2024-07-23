@@ -2,7 +2,7 @@ import io
 import logging
 import re
 from contextlib import contextmanager
-from typing import Dict, Generator, List, Optional, Union
+from typing import Dict, Generator, List, Optional
 
 import fsspec
 import xarray as xr
@@ -13,10 +13,22 @@ logger = logging.getLogger(__name__)
 
 
 class Ukcp18Rcp85(OpenDataset):
-    def __init__(self, ceda_ftp_url: str, ceda_ftp_username: str, ceda_ftp_password: str):
+    def __init__(
+        self,
+        ceda_ftp_url: str,
+        ceda_ftp_username: str,
+        ceda_ftp_password: str,
+        dataset_member_id: str = "01",
+        dataset_frequency: str = "day",
+        dataset_version: str = "v20190731",
+    ):
         self._fs = fsspec.filesystem("ftp", host=ceda_ftp_url, username=ceda_ftp_username, password=ceda_ftp_password)
-
         self.quantities: Dict[str, Dict[str, str]] = {"tas": {"name": "Daily average temperature"}}
+
+        # Refer to https://www.metoffice.gov.uk/binaries/content/assets/metofficegovuk/pdf/research/ukcp/ukcp18-guidance-data-availability-access-and-formats.pdf on what these values refer to # noqa
+        self._dataset_member_id = dataset_member_id
+        self._dataset_frequency = dataset_frequency
+        self._dataset_version = dataset_version
 
     def gcms(self) -> List[str]:
         return list("ukcp18")
@@ -54,7 +66,10 @@ class Ukcp18Rcp85(OpenDataset):
     def _get_files_available_for_quantity_and_year(
         self, gcm: str, scenario: str, quantity: str, year: int
     ) -> List[str]:
-        ftp_url = f"/badc/{gcm}/data/land-rcm/uk/12km/{scenario}/01/{quantity}/day/v20190731/"
+        ftp_url = (
+            f"/badc/{gcm}/data/land-rcm/uk/12km/{scenario}/{self._dataset_member_id}/{quantity}"
+            f"/{self._dataset_frequency}/{self._dataset_version}/"
+        )
         all_files = self._fs.ls(ftp_url, detail=False)
         files_that_contain_year = []
         start_end_date_regex = re.compile(r"_(\d{8})-(\d{8})\.nc")
