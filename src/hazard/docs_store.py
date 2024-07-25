@@ -1,12 +1,11 @@
 import json
 import os
-from pathlib import PurePosixPath
 from typing import Any, Dict, Iterable, List, Optional
 
 import s3fs  # type: ignore
 from fsspec import AbstractFileSystem  # type: ignore
 from fsspec.implementations.local import LocalFileSystem
-from pydantic import BaseModel, parse_obj_as
+from pydantic import parse_obj_as
 
 from hazard.sources.osc_zarr import default_dev_bucket
 
@@ -48,13 +47,13 @@ class DocStore:
         self._fs = fs
         if type(self._fs) == s3fs.S3FileSystem:  # noqa: E721 # use isinstance?
             bucket = os.environ.get(self.__S3_bucket, bucket)
-            self._root = f"s3://{str(PurePosixPath(bucket, prefix))}"
+            self._root = f"s3://{str(os.path.join(bucket, prefix))}"
         elif type(self._fs) == LocalFileSystem:  # noqa: E721 # use isinstance?
             if local_path is None:
                 raise ValueError("if using a local filesystem, please provide a value for `local_path`")
-            self._root = str(PurePosixPath(local_path))
+            self._root = str(os.path.join(local_path))
         else:
-            self._root = str(PurePosixPath(bucket, prefix))
+            self._root = str(os.path.join(bucket, prefix))
 
     def read_inventory(self) -> List[HazardResource]:
         """Read inventory at path provided and return HazardResources."""
@@ -173,16 +172,16 @@ class DocStore:
         return md
 
     def _full_path_doc(self, path: str):
-        return str(PurePosixPath(self._root, "docs", path))
+        return str(os.path.join(self._root, "docs", path))
 
     def _full_path_inventory(self):
-        return str(PurePosixPath(self._root, "inventory.json"))
+        return str(os.path.join(self._root, "inventory.json"))
 
     def _full_path_stac_item(self, id: str):
-        return str(PurePosixPath(self._root, f"{id}.json"))
+        return str(os.path.join(self._root, f"{id}.json"))
 
     def _full_path_stac_catalog(self):
-        return str(PurePosixPath(self._root, "catalog.json"))
+        return str(os.path.join(self._root, "catalog.json"))
 
     def _full_path_stac_collection(self):
-        return str(PurePosixPath(self._root, "collection.json"))
+        return str(os.path.join(self._root, "collection.json"))
