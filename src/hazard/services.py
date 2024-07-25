@@ -17,7 +17,7 @@ logging.basicConfig(
 
 
 def days_tas_above_indicator(
-    source_dataset: SourceDataset = "",
+    source_dataset: SourceDataset = "NEX-GDDP-CMIP6",
     source_dataset_kwargs: Optional[Dict[str, Any]] = None,
     gcm_list: List[str] = ["NorESM2-MM"],
     scenario_list: List[str] = ["ssp585"],
@@ -62,7 +62,7 @@ def days_tas_above_indicator(
 
 
 def degree_days_indicator(
-    source_dataset: SourceDataset = "",
+    source_dataset: SourceDataset = "NEX-GDDP-CMIP6",
     source_dataset_kwargs: Optional[Dict[str, Any]] = None,
     gcm_list: List[str] = ["NorESM2-MM"],
     scenario_list: List[str] = ["ssp585"],
