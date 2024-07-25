@@ -1,16 +1,16 @@
-from typing import TypeAlias, Literal, Mapping, Dict, Any, Protocol, Type
+from typing import Literal, Mapping, Dict, Any, Protocol, Type, Callable
 
 from hazard.protocols import OpenDataset
 from hazard.sources.nex_gddp_cmip6 import NexGddpCmip6
 from hazard.sources.ukcp18_rcp85 import Ukcp18Rcp85
 from hazard.sources.wri_aqueduct import WRIAqueductSource
 
-SourceDataset: TypeAlias = Literal[
+SourceDataset = Literal[
     "NEX-GDDP-CMIP6",
     "UKCP18",
 ]
 
-_SOURCE_DATASETS: Mapping[str, Type[Protocol]] = {
+_SOURCE_DATASETS: Mapping[str, Callable[..., OpenDataset]] = {
     "NEX-GDDP-CMIP6": NexGddpCmip6,
     "UKCP18": Ukcp18Rcp85,
 }
