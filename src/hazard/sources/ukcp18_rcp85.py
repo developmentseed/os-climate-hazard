@@ -1,5 +1,6 @@
 import io
 import logging
+import os
 import re
 from contextlib import contextmanager
 from typing import Dict, Generator, List, Optional
@@ -15,14 +16,16 @@ logger = logging.getLogger(__name__)
 class Ukcp18Rcp85(OpenDataset):
     def __init__(
         self,
-        ceda_ftp_url: str,
-        ceda_ftp_username: str,
-        ceda_ftp_password: str,
         dataset_member_id: str = "01",
         dataset_frequency: str = "day",
         dataset_version: str = "v20190731",
     ):
-        self._fs = fsspec.filesystem("ftp", host=ceda_ftp_url, username=ceda_ftp_username, password=ceda_ftp_password)
+        self._fs = fsspec.filesystem(
+            protocol="ftp",
+            host=os.environ["CEDA_FTP_URL"],
+            username=os.environ["CEDA_FTP_USERNAME"],
+            password=os.environ["CEDA_FTP_PASSWORD"],
+        )
         self.quantities: Dict[str, Dict[str, str]] = {"tas": {"name": "Daily average temperature"}}
 
         # Refer to https://www.metoffice.gov.uk/binaries/content/assets/metofficegovuk/pdf/research/ukcp/ukcp18-guidance-data-availability-access-and-formats.pdf on what these values refer to # noqa
