@@ -1,14 +1,13 @@
 import os
 from datetime import datetime
-from typing import Dict, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd  # type: ignore
 import pytest
 import xarray as xr
-from pytest import approx
 
-from hazard.protocols import OpenDataset, WriteDataset
+from hazard.protocols import OpenDataset, ReadWriteDataArray
 from hazard.utilities import zarr_utilities
 
 
@@ -34,21 +33,31 @@ def test_output_dir():
 class TestSource(OpenDataset):
     """Mocked source for testing."""
 
-    def __init__(self, datasets: Dict[Tuple[str, int], xr.Dataset]):
+    def __init__(self, datasets: Dict[Tuple[str, int], xr.Dataset], gcms: Iterable[str]):
         self.datasets = datasets
+        self._gcms = gcms
+
+    def gcms(self) -> Iterable[str]:
+        return self._gcms
 
     def open_dataset_year(self, gcm: str, scenario: str, quantity: str, year: int, chunks=None) -> xr.Dataset:
         return self.datasets[(quantity, year)]  # ignore scenario and gcm: we test just a single one
 
 
-class TestTarget(WriteDataset):
+class TestTarget(ReadWriteDataArray):
     """Mocked target for testing."""
 
     def __init__(self):
         self.datasets = {}
 
-    def write(self, path: str, dataset: xr.Dataset, spatial_coords: Optional[bool] = False):
-        self.datasets[path] = dataset
+    def write(  # noqa:E704
+        self,
+        path: str,
+        data_array: xr.DataArray,
+        chunks: Optional[List[int]] = None,
+        spatial_coords: Optional[bool] = True,
+    ):
+        self.datasets[path] = data_array
 
     def read(self, path: str):
         return self.datasets[path].rename({"lat": "latitude", "lon": "longitude"})

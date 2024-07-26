@@ -3,7 +3,7 @@ import os
 import fsspec.implementations.local as local  # type: ignore
 import pytest
 
-from hazard.docs_store import DocStore, HazardResources
+from hazard.docs_store import DocStore
 from hazard.models.days_tas_above import DaysTasAboveIndicator
 from hazard.models.degree_days import DegreeDays, HeatingCoolingDegreeDays
 from hazard.models.drought_index import DroughtIndicator
@@ -17,7 +17,7 @@ from hazard.onboard.wri_aqueduct_flood import WRIAqueductFlood
 from hazard.onboard.wri_aqueduct_water_risk import WRIAqueductWaterRisk
 from hazard.utilities import zarr_utilities  # type: ignore
 
-from .conftest import test_output_dir
+from .conftest import test_output_dir  # noqa:F401 - Used as it's a fixture
 
 
 def test_create_inventory(test_output_dir):  # noqa: F811

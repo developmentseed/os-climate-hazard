@@ -2,7 +2,6 @@ import os
 from sys import stdout
 from typing import List
 
-import dask
 import numpy as np
 import pytest
 import rasterio.transform
@@ -12,12 +11,7 @@ import zarr.core  # type: ignore
 from rasterio.warp import Resampling
 
 from hazard.indicator_model import IndicatorModel
-from hazard.models.days_tas_above import DaysTasAboveIndicator
-from hazard.models.degree_days import DegreeDays
-from hazard.models.work_loss import WorkLossIndicator
-from hazard.onboard.jupiter import Jupiter
 from hazard.onboard.tudelft_flood import TUDelftRiverFlood
-from hazard.onboard.wri_aqueduct_flood import WRIAqueductFlood
 from hazard.sources.osc_zarr import OscZarr
 from hazard.utilities import zarr_utilities
 from hazard.utilities.tiles import create_tile_set, create_tiles_for_resource
@@ -25,7 +19,7 @@ from hazard.utilities.tiles import create_tile_set, create_tiles_for_resource
 from .conftest import test_output_dir  # noqa: F401
 
 
-def test_convert_tiles_mocked(test_output_dir):
+def test_convert_tiles_mocked(test_output_dir):  # noqa: F811 not unused, its a fixture
     """We are combining useful logic from a few sources.
     rio_tiler and titiler are very useful and also:
     https://github.com/mapbox/rio-mbtiles
@@ -80,13 +74,13 @@ def test_convert_tiles_mocked(test_output_dir):
 
 
 @pytest.mark.skip(reason="Example not test")
-def test_map_tiles_from_model(test_output_dir):  # noqa: F811
+def test_map_tiles_from_model(test_output_dir) -> None:  # noqa: F811
     local_store = zarr.DirectoryStore(os.path.join(test_output_dir, "hazard", "hazard.zarr"))
     source = OscZarr(store=local_store)
     target = source
 
     models: List[IndicatorModel] = [
-        TUDelftRiverFlood(None),
+        TUDelftRiverFlood("None"),
         # WRIAqueductFlood(),
         # DegreeDays(),
         # Jupiter(),

@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, cast
 
 import s3fs  # type: ignore
 from fsspec import AbstractFileSystem  # type: ignore
@@ -94,42 +94,47 @@ class DocStore:
         """Write a hazard models inventory as STAC."""
 
         if self._fs == s3fs.S3FileSystem:
-            path_Root = self._root
+            path_root = self._root
         else:
             path_root = "."
 
-        items = HazardResources(resources=resources).to_stac_items(path_root=path_root, items_as_dicts=True)
-        for it in items:
+        items = HazardResources(resources=list(resources)).to_stac_items(path_root=path_root, items_as_dicts=True)
+        items_cast: List[Dict[str, Any]] = cast(List[Dict[str, Any]], items)
+        for it in items_cast:
             with self._fs.open(self._full_path_stac_item(id=it["id"]), "w") as f:
                 f.write(json.dumps(it, indent=4))
         catalog_path = self._full_path_stac_catalog()
-        catalog = self.stac_catalog(items=items)
+        catalog = self.stac_catalog(items=items_cast)
         with self._fs.open(catalog_path, "w") as f:
             json_str = json.dumps(catalog, indent=4)
             f.write(json_str)
         collection_path = self._full_path_stac_collection()
-        collection = self.stac_collection(items=items)
+        collection = self.stac_collection(items=items_cast)
         with self._fs.open(collection_path, "w") as f:
             json_str = json.dumps(collection, indent=4)
             f.write(json_str)
 
     def stac_catalog(self, items: List[Dict[str, Any]]) -> Dict[str, Any]:
-
+        links = [
+            {"rel": "self", "href": "./catalog.json"},
+            {"rel": "root", "href": "./catalog.json"},
+            {"rel": "child", "href": "./collection.json"},
+        ]
+        links.extend([{"rel": "item", "href": f"./{x['id']}.json"} for x in items])
         return {
             "stac_version": "1.0.0",
             "id": "osc-hazard-indicators-catalog",
             "type": "Catalog",
             "description": "OS-C hazard indicators catalog",
-            "links": [
-                {"rel": "self", "href": "./catalog.json"},
-                {"rel": "root", "href": "./catalog.json"},
-                {"rel": "child", "href": "./collection.json"},
-            ]
-            + [{"rel": "item", "href": f"./{x['id']}.json"} for x in items],
+            "links": links,
         }
 
     def stac_collection(self, items: List[Dict[str, Any]]) -> Dict[str, Any]:
-
+        links = [
+            {"rel": "self", "type": "application/json", "href": "./collection.json"},
+            {"rel": "root", "type": "application/json", "href": "./catalog.json"},
+        ]
+        links.extend([{"rel": "item", "href": f"./{x['id']}.json"} for x in items])
         return {
             "stac_version": "1.0.0",
             "type": "Collection",
@@ -143,11 +148,7 @@ class DocStore:
                 "temporal": {"interval": [["1950-01-01T00:00:00Z", "2100-12-31T23:59:59Z"]]},
             },
             "providers": [{"name": "UKRI", "roles": ["producer"], "url": "https://www.ukri.org/"}],
-            "links": [
-                {"rel": "self", "type": "application/json", "href": "./collection.json"},
-                {"rel": "root", "type": "application/json", "href": "./catalog.json"},
-            ]
-            + [{"rel": "item", "href": f"./{x['id']}.json"} for x in items],
+            "links": links,
         }
 
     def update_inventory(self, resources: Iterable[HazardResource], remove_existing: bool = False):

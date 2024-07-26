@@ -265,20 +265,22 @@ class HeatingCoolingDegreeDays(ThresholdBasedAverageIndicator):
             above = self._degree_days_indicator(tas, year, AboveBelow.ABOVE)
             below = self._degree_days_indicator(tas, year, AboveBelow.BELOW)
         logger.info(f"Calculation complete for year {year}")
+        bounds_above = self.resources["above"].map.bounds if self.resources["above"].map else []
+        bounds_below = self.resources["below"].map.bounds if self.resources["below"].map else []
         return [
             Indicator(
                 above,
                 PurePosixPath(
                     self.resources["above"].path.format(gcm=item.gcm, scenario=item.scenario, year=item.central_year)
                 ),
-                self.resources["above"].map.bounds,
+                bounds_above,
             ),
             Indicator(
                 below,
                 PurePosixPath(
                     self.resources["below"].path.format(gcm=item.gcm, scenario=item.scenario, year=item.central_year)
                 ),
-                self.resources["below"].map.bounds,
+                bounds_below,
             ),
         ]
 
@@ -307,7 +309,8 @@ class HeatingCoolingDegreeDays(ThresholdBasedAverageIndicator):
             )
         return da
 
-    def _resource(self):
+    def _resource(self) -> Dict[str, HazardResource]:  # type: ignore[override]
+        # Unsure why this returns a dict vs a single resource
         resources: Dict[str, HazardResource] = {}
         for above_below in ["above", "below"]:
             with open(os.path.join(os.path.dirname(__file__), "degree_days.md"), "r") as f:

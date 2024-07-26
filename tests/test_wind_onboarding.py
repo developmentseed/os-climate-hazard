@@ -2,12 +2,11 @@ import os
 
 import pytest  # type: ignore
 import zarr  # type: ignore
-from affine import Affine
 
 from hazard.onboard.storm_wind import BatchItem, STORMIndicator  # type: ignore
 from hazard.sources.osc_zarr import OscZarr
 
-from .conftest import test_output_dir
+from .conftest import test_output_dir  # noqa:F401 used, its a fixture
 
 
 @pytest.mark.skip(reason="on-boarding script")

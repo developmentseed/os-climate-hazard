@@ -1,10 +1,8 @@
-import json
 import os
-from typing import Dict, List
+from typing import List
 
 import fsspec.implementations.local as local  # type: ignore
 import numpy as np
-import pandas as pd  # type: ignore
 import pytest
 import s3fs  # type: ignore
 import xarray as xr
@@ -13,10 +11,9 @@ from dask.distributed import Client, LocalCluster
 from pytest import approx
 
 import hazard.utilities.zarr_utilities as zarr_utilities
-from hazard.docs_store import DocStore, HazardResources  # type: ignore
+from hazard.docs_store import DocStore
 from hazard.models.degree_days import BatchItem, DegreeDays, HeatingCoolingDegreeDays
 from hazard.models.work_loss import WorkLossIndicator
-from hazard.protocols import OpenDataset, WriteDataset
 from hazard.sources.nex_gddp_cmip6 import NexGddpCmip6
 from hazard.sources.osc_zarr import OscZarr
 from tests.conftest import TestSource, TestTarget, _create_test_dataset_averaged, _create_test_datasets_tas
@@ -29,7 +26,7 @@ def test_degree_days_mocked():
     gcm = "NorESM2-MM"
     scenario = "ssp585"
     year = 2030
-    source = TestSource(_create_test_datasets_tas())
+    source = TestSource(_create_test_datasets_tas(), [gcm])
     target = TestTarget()
     # cut down the transform
     model = DegreeDays(window_years=2, gcms=[gcm], scenarios=[scenario], central_years=[year])
@@ -45,7 +42,7 @@ def test_degree_days_mocked():
     )
 
 
-def test_work_loss_mocked():
+def test_work_loss_mocked() -> None:
     """Test degree days calculation based on mocked data."""
     gcm = "NorESM2-MM"
     scenario = "ssp585"
@@ -55,7 +52,7 @@ def test_work_loss_mocked():
     alpha_light = (32.98, 17.81)
     alpha_medium = (30.94, 16.64)
     alpha_heavy = (24.64, 22.72)
-    source = TestSource(test_sets)
+    source = TestSource(test_sets, [gcm])
     target = TestTarget()
     # cut down the transform
     model = WorkLossIndicator(window_years=2, gcms=[gcm], scenarios=[scenario], central_years=[year])
