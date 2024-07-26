@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, cast
 
 import s3fs  # type: ignore
 from fsspec import AbstractFileSystem  # type: ignore
@@ -98,17 +98,18 @@ class DocStore:
         else:
             path_root = "."
 
-        items = HazardResources(resources=resources).to_stac_items(path_root=path_root, items_as_dicts=True)
-        for it in items:
+        items = HazardResources(resources=list(resources)).to_stac_items(path_root=path_root, items_as_dicts=True)
+        items_cast: List[Dict[str, Any]] = cast(List[Dict[str, Any]], items)
+        for it in items_cast:
             with self._fs.open(self._full_path_stac_item(id=it["id"]), "w") as f:
                 f.write(json.dumps(it, indent=4))
         catalog_path = self._full_path_stac_catalog()
-        catalog = self.stac_catalog(items=items)
+        catalog = self.stac_catalog(items=items_cast)
         with self._fs.open(catalog_path, "w") as f:
             json_str = json.dumps(catalog, indent=4)
             f.write(json_str)
         collection_path = self._full_path_stac_collection()
-        collection = self.stac_collection(items=items)
+        collection = self.stac_collection(items=items_cast)
         with self._fs.open(collection_path, "w") as f:
             json_str = json.dumps(collection, indent=4)
             f.write(json_str)

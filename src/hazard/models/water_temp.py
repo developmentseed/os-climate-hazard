@@ -272,7 +272,7 @@ class WaterTemperatureAboveIndicator(ThresholdBasedAverageIndicator):
             description=description,
             display_groups=["Weeks with average water temperature above threshold in °C"],  # display names of groupings
             group_id="",
-            map=MapInfo(
+            map=MapInfo(  # type: ignore[call-arg] # has a default value for bbox
                 colormap=Colormap(
                     name="heating",
                     nodata_index=0,
@@ -300,7 +300,7 @@ class WaterTemperatureAboveIndicator(ThresholdBasedAverageIndicator):
 
     def _other_resource(self) -> HazardResource:
         assert self.resource.map is not None
-        map = MapInfo(
+        map = MapInfo(  # type: ignore[call-arg] # has a default value for bbox
             colormap=self.resource.map.colormap,
             bounds=self.resource.map.bounds,
             path=self.resource.map.path.format(gcm="E2O", scenario="{scenario}", year="{year}"),

@@ -376,7 +376,7 @@ class DroughtIndicator(IndicatorModel[BatchItem]):
             description="",
             display_groups=["Drought SPEI index"],  # display names of groupings
             group_id="",
-            map=MapInfo(
+            map=MapInfo(  # type: ignore[call-arg] # has a default value for bbox
                 colormap=Colormap(
                     name="heating",
                     nodata_index=0,

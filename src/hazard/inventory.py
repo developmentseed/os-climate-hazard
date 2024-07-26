@@ -188,7 +188,7 @@ class HazardResource(BaseModel):
 class HazardResources(BaseModel):
     resources: List[HazardResource]
 
-    def to_stac_items(self, path_root: str, items_as_dicts: bool = False) -> List[Dict[str, Any]]:
+    def to_stac_items(self, path_root: str, items_as_dicts: bool = False) -> List[Union[pystac.Item, Dict]]:
         """
         converts hazard resources to a list of STAC items.
         """

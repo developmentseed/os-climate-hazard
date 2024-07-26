@@ -130,7 +130,7 @@ and 0% for other months, the hazard indicator value is 20%.
                 """,  # noqa:W503
                 group_id="jupiter_osc",
                 display_groups=[],
-                map=MapInfo(
+                map=MapInfo(  # type: ignore[call-arg] # has a default value for bbox
                     bounds=[
                         (-180.0, 85.0),
                         (180.0, 85.0),
@@ -178,7 +178,7 @@ bias-corrected and downscaled multiple Global Climate Models (GCMs).
                 """,  # noqa:W503
                 group_id="jupiter_osc",
                 display_groups=[],
-                map=MapInfo(
+                map=MapInfo(  # type: ignore[call-arg] # has a default value for bbox
                     bounds=[
                         (-180.0, 85.0),
                         (180.0, 85.0),
@@ -220,7 +220,7 @@ downscaled Global Climate Models (GCMs).
                 """,  # noqa:W503
                 group_id="jupiter_osc",
                 display_groups=[],
-                map=MapInfo(
+                map=MapInfo(  # type: ignore[call-arg] # has a default value for bbox
                     bounds=[
                         (-180.0, 85.0),
                         (180.0, 85.0),
@@ -262,7 +262,7 @@ across multiple bias-corrected and downscaled Global Climate Models (GCMs).
                 """,  # noqa:W503
                 group_id="jupiter_osc",
                 display_groups=[],
-                map=MapInfo(
+                map=MapInfo(  # type: ignore[call-arg] # has a default value for bbox
                     bounds=[
                         (-180.0, 85.0),
                         (180.0, 85.0),
@@ -304,7 +304,7 @@ across multiple Global Climate Models (GCMs).
                 """,  # noqa:W503
                 group_id="jupiter_osc",
                 display_groups=[],
-                map=MapInfo(
+                map=MapInfo(  # type: ignore[call-arg] # has a default value for bbox
                     bounds=[
                         (-180.0, 85.0),
                         (180.0, 85.0),
@@ -346,7 +346,7 @@ from multiple Global Climate Models (GCMs).
                 """,  # noqa:W503
                 group_id="jupiter_osc",
                 display_groups=[],
-                map=MapInfo(
+                map=MapInfo(  # type: ignore[call-arg] # has a default value for bbox
                     bounds=[
                         (-180.0, 85.0),
                         (180.0, 85.0),
@@ -390,7 +390,7 @@ Open oceans are excluded.
                 """,  # noqa:W503
                 group_id="jupiter_osc",
                 display_groups=[],
-                map=MapInfo(
+                map=MapInfo(  # type: ignore[call-arg] # has a default value for bbox
                     bounds=[
                         (-180.0, 85.0),
                         (180.0, 85.0),

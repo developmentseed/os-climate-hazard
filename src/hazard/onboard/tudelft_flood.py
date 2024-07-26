@@ -188,7 +188,7 @@ class TUDelftRiverFlood(IndicatorModel[BatchItem]):
                 description=description,
                 group_id="",
                 display_groups=[],
-                map=MapInfo(
+                map=MapInfo(  # type: ignore[call-arg] # has a default value for bbox
                     bounds=[],
                     colormap=Colormap(
                         max_index=255,
