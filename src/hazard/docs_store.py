@@ -16,6 +16,7 @@ class DocStore:
     # environment variable names:
     __access_key = "OSC_S3_ACCESS_KEY_DEV"
     __secret_key = "OSC_S3_SECRET_KEY_DEV"
+    __token = "OSC_S3_TOKEN_DEV"
     __S3_bucket = "OSC_S3_BUCKET_DEV"  # e.g. redhat-osc-physical-landing-647521352890
 
     def __init__(
@@ -42,7 +43,11 @@ class DocStore:
         if fs is None:
             access_key = os.environ.get(self.__access_key, None)
             secret_key = os.environ.get(self.__secret_key, None)
-            fs = s3fs.S3FileSystem(key=access_key, secret=secret_key)
+            token = os.environ.get(self.__token, None)
+            if token:
+                fs = s3fs.S3FileSystem(key=access_key, secret=secret_key, token=token)
+            else:
+                fs = s3fs.S3FileSystem(key=access_key, secret=secret_key)
 
         self._fs = fs
         if type(self._fs) == s3fs.S3FileSystem:  # noqa: E721 # use isinstance?
