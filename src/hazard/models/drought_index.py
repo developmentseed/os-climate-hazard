@@ -36,7 +36,7 @@ class BatchItem:
 
 
 class ZarrWorkingStore(Protocol):
-    def get_store(self, path: str): ...
+    def get_store(self, path: str): ...  # noqa:E704
 
 
 class S3ZarrWorkingStore(ZarrWorkingStore):

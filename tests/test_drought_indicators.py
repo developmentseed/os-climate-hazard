@@ -10,7 +10,6 @@ import zarr  # type: ignore
 
 from hazard.docs_store import DocStore
 from hazard.models.drought_index import DroughtIndicator, LocalZarrWorkingStore, ProgressStore, S3ZarrWorkingStore
-from tests.conftest import TestTarget
 
 
 @pytest.mark.skip(reason="incomplete")

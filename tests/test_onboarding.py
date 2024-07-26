@@ -1,6 +1,5 @@
 import logging
 import os
-import pathlib
 import sys
 from pathlib import PurePosixPath
 
@@ -26,9 +25,7 @@ from hazard.onboard.wri_aqueduct_water_risk import (
 )
 from hazard.sources.nex_gddp_cmip6 import NexGddpCmip6
 from hazard.sources.osc_zarr import OscZarr
-from hazard.sources.wri_aqueduct import WRIAqueductSource
 from hazard.utilities import s3_utilities, zarr_utilities
-from hazard.utilities.tiles import create_tile_set
 
 
 @pytest.fixture

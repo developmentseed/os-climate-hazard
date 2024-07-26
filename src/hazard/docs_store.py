@@ -94,7 +94,7 @@ class DocStore:
         """Write a hazard models inventory as STAC."""
 
         if self._fs == s3fs.S3FileSystem:
-            path_Root = self._root
+            path_root = self._root
         else:
             path_root = "."
 
@@ -114,22 +114,26 @@ class DocStore:
             f.write(json_str)
 
     def stac_catalog(self, items: List[Dict[str, Any]]) -> Dict[str, Any]:
-
+        links = [
+            {"rel": "self", "href": "./catalog.json"},
+            {"rel": "root", "href": "./catalog.json"},
+            {"rel": "child", "href": "./collection.json"},
+        ]
+        links.extend([{"rel": "item", "href": f"./{x['id']}.json"} for x in items])
         return {
             "stac_version": "1.0.0",
             "id": "osc-hazard-indicators-catalog",
             "type": "Catalog",
             "description": "OS-C hazard indicators catalog",
-            "links": [
-                {"rel": "self", "href": "./catalog.json"},
-                {"rel": "root", "href": "./catalog.json"},
-                {"rel": "child", "href": "./collection.json"},
-            ]
-            + [{"rel": "item", "href": f"./{x['id']}.json"} for x in items],
+            "links": links,
         }
 
     def stac_collection(self, items: List[Dict[str, Any]]) -> Dict[str, Any]:
-
+        links = [
+            {"rel": "self", "type": "application/json", "href": "./collection.json"},
+            {"rel": "root", "type": "application/json", "href": "./catalog.json"},
+        ]
+        links.extend([{"rel": "item", "href": f"./{x['id']}.json"} for x in items])
         return {
             "stac_version": "1.0.0",
             "type": "Collection",
@@ -143,11 +147,7 @@ class DocStore:
                 "temporal": {"interval": [["1950-01-01T00:00:00Z", "2100-12-31T23:59:59Z"]]},
             },
             "providers": [{"name": "UKRI", "roles": ["producer"], "url": "https://www.ukri.org/"}],
-            "links": [
-                {"rel": "self", "type": "application/json", "href": "./collection.json"},
-                {"rel": "root", "type": "application/json", "href": "./catalog.json"},
-            ]
-            + [{"rel": "item", "href": f"./{x['id']}.json"} for x in items],
+            "links": links,
         }
 
     def update_inventory(self, resources: Iterable[HazardResource], remove_existing: bool = False):

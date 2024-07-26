@@ -1,9 +1,8 @@
-from typing import Literal, Mapping, Dict, Any, Protocol, Type, Callable
+from typing import Any, Callable, Dict, Literal, Mapping
 
 from hazard.protocols import OpenDataset
 from hazard.sources.nex_gddp_cmip6 import NexGddpCmip6
 from hazard.sources.ukcp18_rcp85 import Ukcp18Rcp85
-from hazard.sources.wri_aqueduct import WRIAqueductSource
 
 SourceDataset = Literal[
     "NEX-GDDP-CMIP6",

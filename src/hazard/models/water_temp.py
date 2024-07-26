@@ -85,8 +85,7 @@ class FutureStreamsSource(OpenDataset):
         filename = self.filename(gcm, scenario, year)
         url = (
             "https://geo.public.data.uu.nl/vault-futurestreams/research-futurestreams%5B1633685642%5D/"
-            + f"original/waterTemp/{adjusted_scenario}/{adjusted_gcm}/"
-            + filename
+            f"original/waterTemp/{adjusted_scenario}/{adjusted_gcm}/{filename}"
         )
         return os.path.join(self.working_dir, filename), url
 

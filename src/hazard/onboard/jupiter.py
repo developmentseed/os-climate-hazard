@@ -127,7 +127,7 @@ This fire model computes the maximum monthly probability per annum of a wildfire
 a given location based on several parameters from multiple bias corrected and downscaled Global Climate Models (GCMs).
 For example, if the probability of occurrence of a wildfire is 5% in July, 20% in August, 10% in September
 and 0% for other months, the hazard indicator value is 20%.
-                """,
+                """,  # noqa:W503
                 group_id="jupiter_osc",
                 display_groups=[],
                 map=MapInfo(
@@ -175,7 +175,7 @@ The SPEI itself is a standardized variable with a mean value 0 and standard devi
 This drought model computes the number of months per annum where the 3-month rolling average
 of SPEI is below -2 based on the mean values of several parameters from
 bias-corrected and downscaled multiple Global Climate Models (GCMs).
-                """,
+                """,  # noqa:W503
                 group_id="jupiter_osc",
                 display_groups=[],
                 map=MapInfo(
@@ -217,7 +217,7 @@ bias-corrected and downscaled multiple Global Climate Models (GCMs).
 This model computes the maximum daily water equivalent precipitation (in mm) measured at the 100 year
 return period based on the mean of the precipitation distribution from multiple bias corrected and
 downscaled Global Climate Models (GCMs).
-                """,
+                """,  # noqa:W503
                 group_id="jupiter_osc",
                 display_groups=[],
                 map=MapInfo(
@@ -259,7 +259,7 @@ downscaled Global Climate Models (GCMs).
 This hail model computes the number of days per annum where hail exceeding 5 cm diameter is possible
 based on the mean distribution of several parameters
 across multiple bias-corrected and downscaled Global Climate Models (GCMs).
-                """,
+                """,  # noqa:W503
                 group_id="jupiter_osc",
                 display_groups=[],
                 map=MapInfo(
@@ -301,7 +301,7 @@ across multiple bias-corrected and downscaled Global Climate Models (GCMs).
 This heat model computes the number of days exceeding 35°C per annum based on the mean of distribution fits
 to the bias-corrected and downscaled high temperature distribution
 across multiple Global Climate Models (GCMs).
-                """,
+                """,  # noqa:W503
                 group_id="jupiter_osc",
                 display_groups=[],
                 map=MapInfo(
@@ -343,7 +343,7 @@ across multiple Global Climate Models (GCMs).
 This wind speed model computes the maximum 1-minute sustained wind speed (in km/hr) experienced over a
 100 year return period based on mean wind speed distributions
 from multiple Global Climate Models (GCMs).
-                """,
+                """,  # noqa:W503
                 group_id="jupiter_osc",
                 display_groups=[],
                 map=MapInfo(
@@ -387,7 +387,7 @@ It is derived from higher-resolution flood hazards, and computed directly as the
 cells within the 30-km cell that have non-zero flooding at that return period.
 This model uses a 30-km grid that experiences flooding at the 200-year return period.
 Open oceans are excluded.
-                """,
+                """,  # noqa:W503
                 group_id="jupiter_osc",
                 display_groups=[],
                 map=MapInfo(
