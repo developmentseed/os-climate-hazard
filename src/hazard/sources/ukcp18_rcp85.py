@@ -50,6 +50,12 @@ class Ukcp18Rcp85(OpenDataset):
         files_available_for_quantity: List[str] = self._get_files_available_for_quantity_and_year(
             gcm, scenario, quantity, year
         )
+
+        if not files_available_for_quantity:
+            raise Exception(
+                f"No UKCP18 files available for: gcm:{gcm}, scenario:{scenario}, quantity:{quantity}, year:{year}"
+            )
+
         all_data_from_files = self._combine_all_files_data(files_available_for_quantity)
         only_data_for_year = all_data_from_files.sel(time=str(year))
         reprojected = self._reproject_quantity(only_data_for_year, quantity)
