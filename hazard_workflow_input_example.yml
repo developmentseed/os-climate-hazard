@@ -1,0 +1,12 @@
+window_years: 10
+source_dataset: "dataset"
+scenario_list: "[item1, item2]"
+osc_s3_token_dev: "aws-sso-token"
+osc_s3_secret_key_dev: "aws-secret-access-key"
+osc_s3_access_key_dev: "aws-access-key"
+gcm_list: "[item1, item2]"
+central_year_list: "[2000, 2001, 2002]"
+central_year_historical: 2001
+ceda_ftp_username: "username"
+ceda_ftp_url: "url"
+ceda_ftp_password: "password"
