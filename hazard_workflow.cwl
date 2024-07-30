@@ -14,26 +14,32 @@ requirements:
     networkAccess: true
   EnvVarRequirement:
       envDef:
-        OSC_S3_ACCESS_KEY_DEV: $(inputs.osc_s3_access_key_dev)
-        OSC_S3_SECRET_KEY_DEV: $(inputs.osc_s3_secret_key_dev)
-        OSC_S3_TOKEN_DEV: $(inputs.osc_s3_token_dev)
         CEDA_FTP_USERNAME: $(inputs.ceda_ftp_username)
         CEDA_FTP_URL: $(inputs.ceda_ftp_url)
         CEDA_FTP_PASSWORD: $(inputs.ceda_ftp_password)
 
 inputs:
-  ceda_ftp_username: string
-  ceda_ftp_password: string
-  ceda_ftp_url: string
-  osc_s3_access_key_dev: string
-  osc_s3_secret_key_dev: string
-  osc_s3_token_dev: string
+  ceda_ftp_username:
+    type: string
+    default: ""
+  ceda_ftp_password:
+    type: string
+    default: ""
+  ceda_ftp_url:
+    type: string
+    default: ""
   source_dataset: string
   gcm_list: string
   scenario_list: string
   central_year_list: string
   central_year_historical: int
   window_years: int
+  indicator:
+    type: string
+    default: "days_tas_above_indicator"
+  store:
+    type: string
+    default: "./indicator"
 
 outputs:
   indicator-results:
@@ -41,9 +47,12 @@ outputs:
     outputBinding:
       glob: "./indicator"
 
-baseCommand: ["os_climate_hazard", "days_tas_above_indicator", "--store", "./indicator"]
+baseCommand: os_climate_hazard
 
 arguments:
+  - valueFrom: $(inputs.indicator)
+  - prefix: --store
+    valueFrom: $(inputs.store)
   - prefix: --source_dataset
     valueFrom: $(inputs.source_dataset)
   - prefix: --gcm_list
