@@ -74,7 +74,7 @@ Copy `hazard_workflow_input_example.yml`, rename to `hazard_workflow_input.yml`,
 You can then invoke the CWL with:
 
 ```
-$ cwltool hazard_workflow.cwl hazard_workflow_input.yml
+$ cwltool hazard_workflow.cwl#produce-indicator hazard_workflow_input.yml
 ```
 
 If successful, you'll find indicators generated in `indicators/` in the repo root.
