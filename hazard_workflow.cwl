@@ -19,12 +19,18 @@ $graph:
       ceda_ftp_url:
         type: string
         default: ""
-      source_dataset: string
-      gcm_list: string
-      scenario_list: string
-      central_year_list: string
-      central_year_historical: int
-      window_years: int
+      source_dataset:
+        type: string
+      gcm_list:
+        type: string
+      scenario_list:
+        type: string
+      central_year_list:
+        type: string
+      central_year_historical:
+        type: int
+      window_years:
+        type: int
       indicator:
         type: string
         default: "days_tas_above_indicator"
@@ -77,17 +83,28 @@ $graph:
             CEDA_FTP_PASSWORD: $(inputs.ceda_ftp_password)
 
     inputs:
-      ceda_ftp_username: string
-      ceda_ftp_password: string
-      ceda_ftp_url: string
-      source_dataset: string
-      gcm_list: string
-      scenario_list: string
-      central_year_list: string
-      central_year_historical: int
-      window_years: int
-      indicator: string
-      store: string
+      ceda_ftp_username:
+        type: string
+      ceda_ftp_password:
+        type: string
+      ceda_ftp_url:
+        type: string
+      source_dataset:
+        type: string
+      gcm_list:
+        type: string
+      scenario_list:
+        type: string
+      central_year_list:
+        type: string
+      central_year_historical:
+        type: int
+      window_years:
+        type: int
+      indicator:
+        type: string
+      store:
+        type: string
 
     outputs:
       indicator-results:
