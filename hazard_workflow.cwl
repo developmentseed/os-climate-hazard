@@ -37,6 +37,9 @@ $graph:
       store:
         type: string
         default: "./indicator"
+      inventory_format:
+        type: string
+        default: "osc"
 
     outputs:
       - id: indicator-result
@@ -59,6 +62,7 @@ $graph:
           window_years: window_years
           indicator: indicator
           store: store
+          inventory_format: inventory_format
         out:
           - indicator-results
 
@@ -105,6 +109,8 @@ $graph:
         type: string
       store:
         type: string
+      inventory_format:
+        type: string
 
     outputs:
       indicator-results:
@@ -130,3 +136,5 @@ $graph:
         valueFrom: $(inputs.central_year_historical)
       - prefix: --window_years
         valueFrom: $(inputs.window_years)
+      - prefix: --inventory_format
+        valueFrom: $(inputs.inventory_format)
