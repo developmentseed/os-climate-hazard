@@ -76,7 +76,7 @@ $graph:
 
     hints:
       DockerRequirement:
-        dockerPull: public.ecr.aws/c9k5s3u3/os-hazard-indicator:ukcp18compat
+        dockerPull: public.ecr.aws/c9k5s3u3/os-hazard-indicator:latest
 
     requirements:
       ResourceRequirement:
