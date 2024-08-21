@@ -12,7 +12,7 @@ from rasterio import CRS
 
 from hazard.protocols import OpenDataset
 
-_UKCP18_2_2km_ROTATED_POLES = """
+_UKCP18_UK_2_2KM_ROTATED_POLES = """
 GEOGCRS["Rotated_pole",
     BASEGEOGCRS["unknown",
         DATUM["unnamed",
@@ -43,6 +43,37 @@ GEOGCRS["Rotated_pole",
             ANGLEUNIT["degree",0.0174532925199433,
                 ID["EPSG",9122]]]]
             """
+_UKCP18_EUR_12KM_ROTATED_POLES = """
+GEOGCRS["Rotated_pole",
+    BASEGEOGCRS["unknown",
+        DATUM["unnamed",
+            ELLIPSOID["Sphere",6371229,0,
+                LENGTHUNIT["metre",1,
+                    ID["EPSG",9001]]]],
+        PRIMEM["Greenwich",0,
+            ANGLEUNIT["degree",0.0174532925199433,
+                ID["EPSG",9122]]]],
+    DERIVINGCONVERSION["Pole rotation (netCDF CF convention)",
+        METHOD["Pole rotation (netCDF CF convention)"],
+        PARAMETER["Grid north pole latitude (netCDF CF convention)",39.25,
+            ANGLEUNIT["degree",0.0174532925199433,
+                ID["EPSG",9122]]],
+        PARAMETER["Grid north pole longitude (netCDF CF convention)",198,
+            ANGLEUNIT["degree",0.0174532925199433,
+                ID["EPSG",9122]]],
+        PARAMETER["North pole grid longitude (netCDF CF convention)",0,
+            ANGLEUNIT["degree",0.0174532925199433,
+                ID["EPSG",9122]]]],
+    CS[ellipsoidal,2],
+        AXIS["latitude",north,
+            ORDER[1],
+            ANGLEUNIT["degree",0.0174532925199433,
+                ID["EPSG",9122]]],
+        AXIS["longitude",east,
+            ORDER[2],
+            ANGLEUNIT["degree",0.0174532925199433,
+                ID["EPSG",9122]]]]
+"""
 _BRITISH_NATIONAL_GRID = "EPSG:27700"
 _WGS84 = "EPSG:4326"
 
@@ -172,7 +203,19 @@ class Ukcp18(OpenDataset):
         elif self._domain == "uk" and self._resolution == "2.2km":
             prepped_data_array = self._prepare_data_array(
                 dataset[quantity],
-                rasterio.CRS.from_wkt(_UKCP18_2_2km_ROTATED_POLES),
+                rasterio.CRS.from_wkt(_UKCP18_UK_2_2KM_ROTATED_POLES),
+                drop_vars=["latitude", "longitude"],
+            )
+            prepped_data_array.rio.set_spatial_dims(
+                "grid_longitude", "grid_latitude", inplace=True
+            )
+            dataset[quantity] = self._reproject_and_rename_coordinates(
+                prepped_data_array, _WGS84, "x", "y"
+            )
+        elif self._domain == "eur" and self._resolution == "12km":
+            prepped_data_array = self._prepare_data_array(
+                dataset[quantity],
+                rasterio.CRS.from_wkt(_UKCP18_EUR_12KM_ROTATED_POLES),
                 drop_vars=["latitude", "longitude"],
             )
             prepped_data_array.rio.set_spatial_dims(
