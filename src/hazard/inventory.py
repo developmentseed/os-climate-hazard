@@ -208,10 +208,15 @@ class HazardResource(BaseModel):
 
         stac_item.validate()
 
+        item_string = json.dumps(stac_item.to_dict())
+        for k, v in combined_parameters.items():
+            item_string = item_string.replace(f"{{{k}}}", str(v))
+        templated_out_item = stac_item.from_dict(json.loads(item_string))
+
         if item_as_dict:
-            return stac_item.to_dict()
+            return templated_out_item.to_dict()
         else:
-            return stac_item
+            return templated_out_item
 
 
 class HazardResources(BaseModel):
