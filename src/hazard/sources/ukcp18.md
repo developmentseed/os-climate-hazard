@@ -1,0 +1,1 @@
+[UK Climate Projections (UKCP)](https://www.metoffice.gov.uk/research/approach/collaboration/ukcp), fetched from the [Centre for Environmental Data Analysis (CEDA)](http://catalogue.ceda.ac.uk/?q=ukcp18&record_types=Observation&sort_by=relevance). Projections until 2100, produced for the globe at 60km scale and for the UK at 12 km, further downscaled to 2.2 km.
