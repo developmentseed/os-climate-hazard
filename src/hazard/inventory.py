@@ -6,7 +6,6 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Union
 import pystac
 from pydantic import BaseModel, Field
 
-
 # region HazardModel
 
 
