@@ -1,13 +1,11 @@
 import datetime
 import itertools
 import json
-import logging
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 import pystac
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
 
 # region HazardModel
 
@@ -151,7 +149,6 @@ class HazardResource(BaseModel):
         items = []
 
         for p in permutations:
-            logger.info(f"Permutation: {p}")
             items.append(
                 self.to_stac_item(
                     path_root=path_root,
