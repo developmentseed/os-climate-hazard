@@ -208,15 +208,24 @@ class HazardResource(BaseModel):
 
         stac_item.validate()
 
-        item_string = json.dumps(stac_item.to_dict())
-        for k, v in combined_parameters.items():
-            item_string = item_string.replace(f"{{{k}}}", str(v))
-        templated_out_item = stac_item.from_dict(json.loads(item_string))
+        templated_out_item = self._expand_template_values_for_stac_record(
+            combined_parameters, stac_item
+        )
 
         if item_as_dict:
             return templated_out_item.to_dict()
         else:
             return templated_out_item
+
+    def _expand_template_values_for_stac_record(
+        self, combined_parameters: Dict[Any, str], stac_item: pystac.Item
+    ):
+        item_string = json.dumps(stac_item.to_dict())
+        for k, v in combined_parameters.items():
+            item_string = item_string.replace(f"{{{k}}}", str(v))
+        templated_out_item = stac_item.from_dict(json.loads(item_string))
+        templated_out_item.validate()
+        return templated_out_item
 
 
 class HazardResources(BaseModel):
