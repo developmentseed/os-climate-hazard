@@ -92,7 +92,7 @@ $graph:
 
     hints:
       DockerRequirement:
-        dockerPull: public.ecr.aws/c9k5s3u3/os-hazard-indicator:latest
+        dockerPull: public.ecr.aws/c9k5s3u3/os-hazard-indicator:10463a7
 
     requirements:
       ResourceRequirement:
