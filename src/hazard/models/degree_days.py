@@ -45,6 +45,7 @@ class DegreeDays(IndicatorModel[BatchItem]):
         scenarios: Iterable[str] = ["historical", "ssp126", "ssp245", "ssp585"],
         central_year_historical: int = 2005,
         central_years: Iterable[int] = [2030, 2040, 2050],
+        source_dataset: str = "NEX-GDDP-CMIP6",
     ):
         """Construct model to calculate degree days from temperature data sets.
 
@@ -69,6 +70,7 @@ class DegreeDays(IndicatorModel[BatchItem]):
         self.scenarios = scenarios
         self.central_years = central_years
         self.central_year_historical = central_year_historical
+        self.source_dataset = source_dataset
 
     def batch_items(self) -> Iterable[BatchItem]:
         """Items to process."""
@@ -94,8 +96,19 @@ class DegreeDays(IndicatorModel[BatchItem]):
         return [self._resource()]
 
     def _resource(self):
-        with open(os.path.join(os.path.dirname(__file__), "degree_days.md"), "r") as f:
+        current_file_dir_name = os.path.dirname(__file__)
+        with open(os.path.join(current_file_dir_name, "degree_days.md"), "r") as f:
             description = f.read().replace("\u00c2\u00b0", "\u00b0")
+
+        sources_dir_name = os.path.join(
+            os.path.dirname(current_file_dir_name), "sources"
+        )
+        source_dataset_filename = self.source_dataset.lower().replace("-", "_")
+
+        with open(
+            os.path.join(sources_dir_name, f"{source_dataset_filename}.md"), "r"
+        ) as source_dataset_description:
+            description += "\n" + source_dataset_description.read()
 
         scenarios = []
 
