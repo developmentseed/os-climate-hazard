@@ -62,7 +62,7 @@ def days_tas_above_indicator(
 
     _write_inventory_files(docs_store, inventory_format, model)
 
-    model.run_all(source, target, client=client)
+    # model.run_all(source, target, client=client)
 
 
 def degree_days_indicator(
@@ -110,7 +110,7 @@ def degree_days_indicator(
 
     _write_inventory_files(docs_store, inventory_format, model)
 
-    model.run_all(source, target, client=client)
+    # model.run_all(source, target, client=client)
 
 
 def _write_inventory_files(
