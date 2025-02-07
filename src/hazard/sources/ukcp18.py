@@ -2,14 +2,17 @@ import io
 import logging
 import os
 import re
+from base64 import b64encode
 from contextlib import contextmanager
 from typing import Dict, Generator, List, Optional, Tuple, Union
 
+import aiohttp
 import fsspec
 import numpy as np
 import rasterio
 import rasterio.crs
 import rasterio.warp
+import requests
 import xarray as xr
 from rasterio import CRS
 from rioxarray.rioxarray import affine_to_coords
@@ -23,8 +26,23 @@ _RESOLUTION_TO_COLLECTION_MAPPINGS = {
     "5km": "land-cpm",
     "2.2km": "land-cpm",
 }
+_CEDA_TOKEN_API_URL = "https://services-beta.ceda.ac.uk/api/token/create/"
 
 logger = logging.getLogger(__name__)
+
+
+async def get_ceda_http_client() -> aiohttp.ClientSession:
+    ceda_post_token = b64encode(
+        f"{os.environ['CEDA_USERNAME']}:{os.environ['CEDA_PASSWORD']}".encode("utf-8")
+    ).decode("ascii")
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            _CEDA_TOKEN_API_URL,
+            headers={"Authorization": f"Basic {ceda_post_token}"},
+        ) as response:
+            response.raise_for_status()
+            token: str = (await response.json())["access_token"]
+            return aiohttp.ClientSession(headers={"Authorization": f"Bearer {token}"})
 
 
 class Ukcp18(OpenDataset):
@@ -37,13 +55,9 @@ class Ukcp18(OpenDataset):
         resolution: str = "12km",
     ):
         self._fs = fsspec.filesystem(
-            "filecache",
-            target_protocol="ftp",
-            target_options={
-                "host": os.environ["CEDA_FTP_URL"],
-                "username": os.environ["CEDA_FTP_USERNAME"],
-                "password": os.environ["CEDA_FTP_PASSWORD"],
-            },
+            protocol="filecache",
+            target_protocol="http",
+            target_options={"get_client": get_ceda_http_client},
             cache_storage="/tmp/ukcp18cache/",
         )
         self.quantities: Dict[str, Dict[str, str]] = {
@@ -102,21 +116,38 @@ class Ukcp18(OpenDataset):
             with self._fs.open(file, "rb") as f:
                 with io.BytesIO(f.read()) as file_in_memory:
                     file_in_memory.seek(0)
-                    datasets.append(xr.open_dataset(file_in_memory).load())
+                    datasets.append(
+                        xr.open_dataset(file_in_memory, engine="h5netcdf").load()
+                    )
             if crs is None:
                 with self._fs.open(file, "rb") as crs_f:
                     with rasterio.MemoryFile(crs_f.read(), ext=".nc") as crs_mem:
                         crs = crs_mem.open().crs
         return xr.combine_by_coords(datasets, combine_attrs="override"), crs  # type: ignore[return-value]
 
+    def _get_list_of_files_in_json_directory_listing(
+        self, json_directory_listing: str
+    ) -> List[str]:
+        response = requests.get(json_directory_listing)
+        response.raise_for_status()
+        return [
+            item
+            for item in response.json().get("items", [])
+            if item.get("type") == "file"
+        ]
+
     def _get_files_available_for_quantity_and_year(
         self, gcm: str, scenario: str, quantity: str, year: int
     ) -> List[str]:
-        ftp_url = (
+        ceda_directory_structure = (
+            "https://data.ceda.ac.uk"
             f"/badc/{gcm}/data/{self._collection}/{self._domain}/{self._resolution}/{scenario}/{self._dataset_member_id}/{quantity}"
-            f"/{self._dataset_frequency}/{self._dataset_version}/"
+            f"/{self._dataset_frequency}/{self._dataset_version}"
         )
-        all_files = self._fs.ls(ftp_url, detail=False)
+        json_directory_listing = f"{ceda_directory_structure}?json"
+        all_files = self._get_list_of_files_in_json_directory_listing(
+            json_directory_listing
+        )
         files_that_contain_year = []
         start_end_date_regex = re.compile(r"_(\d{8})-(\d{8})\.nc")
         for file in all_files:
@@ -125,7 +156,7 @@ class Ukcp18(OpenDataset):
                 start_date = int(matches.group(1)[:4])
                 end_date = int(matches.group(2)[:4])
                 if start_date <= year <= end_date:
-                    files_that_contain_year.append(f"{ftp_url}{file}")
+                    files_that_contain_year.append(f"{ceda_directory_structure}/{file}")
         return files_that_contain_year
 
     def _prepare_data_array(
