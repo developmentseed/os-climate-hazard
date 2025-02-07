@@ -31,18 +31,23 @@ _CEDA_TOKEN_API_URL = "https://services-beta.ceda.ac.uk/api/token/create/"
 logger = logging.getLogger(__name__)
 
 
-async def get_ceda_http_client() -> aiohttp.ClientSession:
-    ceda_post_token = b64encode(
-        f"{os.environ['CEDA_USERNAME']}:{os.environ['CEDA_PASSWORD']}".encode("utf-8")
-    ).decode("ascii")
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-            _CEDA_TOKEN_API_URL,
-            headers={"Authorization": f"Basic {ceda_post_token}"},
-        ) as response:
-            response.raise_for_status()
-            token: str = (await response.json())["access_token"]
-            return aiohttp.ClientSession(headers={"Authorization": f"Bearer {token}"})
+# async def get_ceda_http_client(**kwargs) -> aiohttp.ClientSession:
+#     ceda_post_token = b64encode(
+#         f"{os.environ['CEDA_USERNAME']}:{os.environ['CEDA_PASSWORD']}".encode("utf-8")
+#     ).decode("ascii")
+#     response = requests.post(_CEDA_TOKEN_API_URL, headers={"Authorization": f"Basic {ceda_post_token}"})
+#     response.raise_for_status()
+#     logger.info(response.json())
+#     token = response.json()["access_token"]
+#     return aiohttp.ClientSession(headers={"Authorization": f"Bearer {token}"}, **kwargs)
+    # async with aiohttp.ClientSession() as session:
+    #     async with session.post(
+    #         _CEDA_TOKEN_API_URL,
+    #         headers={"Authorization": f"Basic {ceda_post_token}"},
+    #     ) as response:
+    #         response.raise_for_status()
+    #         token: str = (await response.json())["access_token"]
+    #         return aiohttp.ClientSession(headers={"Authorization": f"Bearer {token}"})
 
 
 class Ukcp18(OpenDataset):
@@ -50,14 +55,22 @@ class Ukcp18(OpenDataset):
         self,
         dataset_member_id: str = "01",
         dataset_frequency: str = "day",
-        dataset_version: str = "latest",
+        dataset_version: str = "v20190731",
         domain: str = "uk",
         resolution: str = "12km",
     ):
+        ceda_post_token = b64encode(
+            f"{os.environ['CEDA_USERNAME']}:{os.environ['CEDA_PASSWORD']}".encode("utf-8")
+        ).decode("ascii")
+        response = requests.post(_CEDA_TOKEN_API_URL, headers={"Authorization": f"Basic {ceda_post_token}"})
+        response.raise_for_status()
+        token = response.json()["access_token"]
+        logger.info(token)
+
         self._fs = fsspec.filesystem(
             protocol="filecache",
             target_protocol="http",
-            target_options={"get_client": get_ceda_http_client},
+            target_options={"headers": {"Authorization": f"Bearer {token}"}},
             cache_storage="/tmp/ukcp18cache/",
         )
         self.quantities: Dict[str, Dict[str, str]] = {
@@ -117,7 +130,7 @@ class Ukcp18(OpenDataset):
                 with io.BytesIO(f.read()) as file_in_memory:
                     file_in_memory.seek(0)
                     datasets.append(
-                        xr.open_dataset(file_in_memory, engine="h5netcdf").load()
+                        xr.open_dataset(file_in_memory).load()
                     )
             if crs is None:
                 with self._fs.open(file, "rb") as crs_f:
@@ -131,7 +144,7 @@ class Ukcp18(OpenDataset):
         response = requests.get(json_directory_listing)
         response.raise_for_status()
         return [
-            item
+            item["name"]
             for item in response.json().get("items", [])
             if item.get("type") == "file"
         ]
