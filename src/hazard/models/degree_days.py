@@ -178,7 +178,6 @@ class DegreeDays(IndicatorModel[BatchItem]):
         pp = self._item_path(item)
         logger.info(f"Writing array to {str(pp)}")
         target.write(str(pp), average_deg_days)
-        pp = self._item_path(item)
         pp_map = pp.with_name(pp.name + "_map")
         self._generate_map(
             str(pp),
@@ -196,7 +195,7 @@ class DegreeDays(IndicatorModel[BatchItem]):
         target: ReadWriteDataArray,
     ):
         logger.info(f"Generating map projection for file {path}; reading file")
-        da = target.read(path)
+        da = target.read(f"{path}/{PurePosixPath(path).name}")
         logger.info("Reprojecting to EPSG:3857")
         # reprojected = transform_epsg4326_to_epsg3857(average_deg_days.sel(latitude=slice(85, -85)))
         reprojected = transform_epsg4326_to_epsg3857(da)
