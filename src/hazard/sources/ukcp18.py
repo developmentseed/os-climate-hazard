@@ -4,9 +4,8 @@ import os
 import re
 from base64 import b64encode
 from contextlib import contextmanager
-from typing import Dict, Generator, List, Optional, Tuple, Union
+from typing import Generator, List, Optional, Tuple, Union
 
-import aiohttp
 import fsspec
 import numpy as np
 import rasterio
@@ -26,28 +25,14 @@ _RESOLUTION_TO_COLLECTION_MAPPINGS = {
     "5km": "land-cpm",
     "2.2km": "land-cpm",
 }
+_COLLECTION_TO_LATEST_DATA_MAPPINGS = {
+    "land-gcm": "v20181122",
+    "land-rcm": "v20190731",
+    "land-cpm": "v20210615",
+}
 _CEDA_TOKEN_API_URL = "https://services-beta.ceda.ac.uk/api/token/create/"
 
 logger = logging.getLogger(__name__)
-
-
-# async def get_ceda_http_client(**kwargs) -> aiohttp.ClientSession:
-#     ceda_post_token = b64encode(
-#         f"{os.environ['CEDA_USERNAME']}:{os.environ['CEDA_PASSWORD']}".encode("utf-8")
-#     ).decode("ascii")
-#     response = requests.post(_CEDA_TOKEN_API_URL, headers={"Authorization": f"Basic {ceda_post_token}"})
-#     response.raise_for_status()
-#     logger.info(response.json())
-#     token = response.json()["access_token"]
-#     return aiohttp.ClientSession(headers={"Authorization": f"Bearer {token}"}, **kwargs)
-    # async with aiohttp.ClientSession() as session:
-    #     async with session.post(
-    #         _CEDA_TOKEN_API_URL,
-    #         headers={"Authorization": f"Basic {ceda_post_token}"},
-    #     ) as response:
-    #         response.raise_for_status()
-    #         token: str = (await response.json())["access_token"]
-    #         return aiohttp.ClientSession(headers={"Authorization": f"Bearer {token}"})
 
 
 class Ukcp18(OpenDataset):
@@ -55,36 +40,39 @@ class Ukcp18(OpenDataset):
         self,
         dataset_member_id: str = "01",
         dataset_frequency: str = "day",
-        dataset_version: str = "v20190731",
         domain: str = "uk",
         resolution: str = "12km",
     ):
-        ceda_post_token = b64encode(
-            f"{os.environ['CEDA_USERNAME']}:{os.environ['CEDA_PASSWORD']}".encode("utf-8")
-        ).decode("ascii")
-        response = requests.post(_CEDA_TOKEN_API_URL, headers={"Authorization": f"Basic {ceda_post_token}"})
-        response.raise_for_status()
-        token = response.json()["access_token"]
-        logger.info(token)
+        self._token = self.fetch_ceda_token()
 
         self._fs = fsspec.filesystem(
             protocol="filecache",
             target_protocol="http",
-            target_options={"headers": {"Authorization": f"Bearer {token}"}},
+            target_options={"headers": {"Authorization": f"Bearer {self._token}"}},
+            timeout=60,
             cache_storage="/tmp/ukcp18cache/",
         )
-        self.quantities: Dict[str, Dict[str, str]] = {
-            "tas": {"name": "Daily average temperature"}
-        }
-
-        # Refer to https://www.metoffice.gov.uk/binaries/content/assets/metofficegovuk/pdf/research/ukcp/ukcp18-guidance-data-availability-access-and-formats.pdf on what these values refer to # noqa
-        self._dataset_member_id = dataset_member_id
-        self._dataset_frequency = dataset_frequency
-        self._dataset_version = dataset_version
 
         self._collection = _RESOLUTION_TO_COLLECTION_MAPPINGS[resolution]
         self._domain = domain
         self._resolution = resolution
+
+        # Refer to https://www.metoffice.gov.uk/binaries/content/assets/metofficegovuk/pdf/research/ukcp/ukcp18-guidance-data-availability-access-and-formats.pdf on what these values refer to # noqa
+        self._dataset_member_id = dataset_member_id
+        self._dataset_frequency = dataset_frequency
+        self._dataset_version = _COLLECTION_TO_LATEST_DATA_MAPPINGS[self._collection]
+
+    def fetch_ceda_token(self):
+        ceda_post_token = b64encode(
+            f"{os.environ['CEDA_USERNAME']}:{os.environ['CEDA_PASSWORD']}".encode(
+                "utf-8"
+            )
+        ).decode("ascii")
+        response = requests.post(
+            _CEDA_TOKEN_API_URL, headers={"Authorization": f"Basic {ceda_post_token}"}
+        )
+        response.raise_for_status()
+        return response.json()["access_token"]
 
     def gcms(self) -> List[str]:
         return list("ukcp18")
@@ -129,9 +117,7 @@ class Ukcp18(OpenDataset):
             with self._fs.open(file, "rb") as f:
                 with io.BytesIO(f.read()) as file_in_memory:
                     file_in_memory.seek(0)
-                    datasets.append(
-                        xr.open_dataset(file_in_memory).load()
-                    )
+                    datasets.append(xr.open_dataset(file_in_memory).load())
             if crs is None:
                 with self._fs.open(file, "rb") as crs_f:
                     with rasterio.MemoryFile(crs_f.read(), ext=".nc") as crs_mem:
@@ -152,12 +138,13 @@ class Ukcp18(OpenDataset):
     def _get_files_available_for_quantity_and_year(
         self, gcm: str, scenario: str, quantity: str, year: int
     ) -> List[str]:
+        data_host = "https://data.ceda.ac.uk"
+        dap_host = "https://dap.ceda.ac.uk"
         ceda_directory_structure = (
-            "https://data.ceda.ac.uk"
             f"/badc/{gcm}/data/{self._collection}/{self._domain}/{self._resolution}/{scenario}/{self._dataset_member_id}/{quantity}"
             f"/{self._dataset_frequency}/{self._dataset_version}"
         )
-        json_directory_listing = f"{ceda_directory_structure}?json"
+        json_directory_listing = f"{data_host}{ceda_directory_structure}?json"
         all_files = self._get_list_of_files_in_json_directory_listing(
             json_directory_listing
         )
@@ -169,7 +156,9 @@ class Ukcp18(OpenDataset):
                 start_date = int(matches.group(1)[:4])
                 end_date = int(matches.group(2)[:4])
                 if start_date <= year <= end_date:
-                    files_that_contain_year.append(f"{ceda_directory_structure}/{file}")
+                    files_that_contain_year.append(
+                        f"{dap_host}{ceda_directory_structure}/{file}"
+                    )
         return files_that_contain_year
 
     def _prepare_data_array(
