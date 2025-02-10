@@ -154,7 +154,7 @@ class OscZarr(ReadWriteDataArray):
         if self.write_xarray_compatible_zarr and spatial_coords:
             pp = PurePosixPath(path)
             da.name = pp.name
-            self.write_data_array(str(pp), da)
+            self.write_data_array(str(pp.parent), da)
         else:
             self.write_zarr(path, da, chunks)
 
@@ -228,7 +228,6 @@ class OscZarr(ReadWriteDataArray):
             path (str): Relative path.
             da (xr.DataArray): The DataArray.
         """
-        # we expect the data to be called 'data'
         if "lon" not in da.dims and "longitude" not in da.dims and "x" not in da.dims:
             raise ValueError("longitude or x dimension not found.")
         if "lat" not in da.dims and "latitude" not in da.dims and "y" not in da.dims:
@@ -251,7 +250,7 @@ class OscZarr(ReadWriteDataArray):
             self.root.store,
             compute=True,
             group=path,
-            mode="w",
+            mode="a",
             consolidated=False,
             encoding={da_norm.name: options},
         )

@@ -172,19 +172,22 @@ class DegreeDays(IndicatorModel[BatchItem]):
         source: OpenDataset,
         target: ReadWriteDataArray,
         client: Client,
+        generate_map: bool = False,
     ):
         average_deg_days = self._average_degree_days(client, source, target, item)
         average_deg_days.attrs["crs"] = CRS.from_epsg(4326)
         pp = self._item_path(item)
         logger.info(f"Writing array to {str(pp)}")
         target.write(str(pp), average_deg_days)
-        pp_map = pp.with_name(pp.name + "_map")
-        self._generate_map(
-            str(pp),
-            str(pp_map),
-            item.resource.map.bounds if item.resource.map is not None else None,
-            target,
-        )
+        if generate_map:
+            pp_map = pp.with_name(pp.name + "_map")
+            logger.info(f"Writing array to {str(pp_map)}")
+            self._generate_map(
+                str(pp),
+                str(pp_map),
+                item.resource.map.bounds if item.resource.map is not None else None,
+                target,
+            )
         return
 
     def _generate_map(
@@ -195,9 +198,8 @@ class DegreeDays(IndicatorModel[BatchItem]):
         target: ReadWriteDataArray,
     ):
         logger.info(f"Generating map projection for file {path}; reading file")
-        da = target.read(f"{path}/{PurePosixPath(path).name}")
+        da = target.read(path)
         logger.info("Reprojecting to EPSG:3857")
-        # reprojected = transform_epsg4326_to_epsg3857(average_deg_days.sel(latitude=slice(85, -85)))
         reprojected = transform_epsg4326_to_epsg3857(da)
         # sanity check bounds:
         (top, right, bottom, left) = check_map_bounds(reprojected)
